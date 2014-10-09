@@ -1,0 +1,28 @@
+{
+  "name": "jquery-outliner",
+  "title": "jQuery Outliner",
+  "description": "Dom element outliner. An easy implementation of Dev tools like implementation with jQuery.",
+  "version": "0.1.0",
+  "homepage": "",
+  "author": {
+    "name": "Vitor Barbosa",
+    "url": "https://github.com/vitorhsb"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "~1.11"
+  },
+  "keywords": [
+    "jquery-plugin"
+  ]
+}
