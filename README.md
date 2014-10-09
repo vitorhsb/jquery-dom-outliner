@@ -6,8 +6,8 @@ jQuery DOM Outliner. An easy implementation of Dev tools like implementation wit
 
 Download the [production version][min] or the [development version][max].
 
-[min]: https://raw.github.com/vitorhsb/jquery-dom-outliner/master/dist/jquery.dom-outliner.min.js
-[max]: https://raw.github.com/vitorhsb/jquery-dom-outliner/master/dist/jquery.dom-outliner.js
+[min]: https://raw.github.com/vitorhsb/jquery-dom-outliner/blob/master/dist/jquery.dom-outliner.min.js
+[max]: https://raw.github.com/vitorhsb/jquery-dom-outliner/blob/master/dist/jquery.dom-outliner.js
 
 In your web page:
 
