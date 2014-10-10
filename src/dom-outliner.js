@@ -304,6 +304,10 @@
         }
     }
 
+    function updateSelection($el) {
+        return currentSelection ? cancelSelection() : onSelection($el);
+    }
+
 
     /**
      * CONTROL METHODS
@@ -331,16 +335,11 @@
                         return;
                     }
 
-                    if (e.type == 'click') {
-                        if(currentSelection) {
-                            cancelSelection();
-                        } else {
-                            onSelection($tgt);
-                        }
+                    if (e.type === 'click') {
+                        updateSelection($tgt);
                     } else {
                         updateOutlinePosition($tgt);
                     }
-
                 });
         }
 
