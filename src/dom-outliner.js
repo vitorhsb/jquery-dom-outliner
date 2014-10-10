@@ -12,6 +12,8 @@
         options = {},
         namespace = 'dom-outliner',
         selectedClass = namespace + '-selected',
+        labelClass = namespace + '-label',
+        labelSelectedClass = labelClass + '-selected',
         glassClass = namespace + '-glass',
         transparentClass = namespace + '-transparent-glass',
         glasses = {},
@@ -65,7 +67,7 @@
                 'outline: ' + options.outlineWidth + 'px ' +
                     options.outlineStyle + ' ' + options.outlineColor + ';' +
             '}' +
-            '.' + namespace + '-label {' +
+            '.' + labelClass + ' {' +
                 'background: ' + options.outlineColor + ';' +
                 'color: #fff;' +
                 'font: bold 12px/12px Helvetica, Arial, sans-serif;' +
@@ -77,6 +79,10 @@
             '.' + selectedClass + ' {' +
                 'outline: ' + options.outlineWidth + 'px ' +
                     options.outlineStyle + ' ' + options.outlineSelectedColor + ';' +
+            '}' +
+            '.' + labelSelectedClass + ' {' +
+                'background: ' + options.outlineSelectedColor + ';' +
+                'z-index: 2000002;' +
             '}' +
             '.' + glassClass + ' {' +
                 'opacity: 0.8 !important;' +
@@ -195,12 +201,15 @@
             } catch (err) {
             } finally {}
         }
+
+        if(options.showLabel) {
+            helpers.label.addClass(labelSelectedClass);
+        }
     }
 
     function unsetSelection($el) {
-        $el.each(function(){
-            $(this).removeClass(selectedClass).off('.' + namespace);
-        });
+        $el.removeClass(selectedClass).removeClass(namespace).off('.' + namespace);
+        helpers.label.removeClass(labelSelectedClass).hide();
     }
 
     function onSelection($el) {
@@ -229,15 +238,70 @@
     }
 
     function shouldIgnore($el) {
-        if( (options.filter && !$el.is(options.filter)) || (options.exclude && $el.is(options.exclude)) ) {
-            return true;
+        var ignore = false;
+
+        if(options.filter) {
+            ignore = true;
+
+            $.each(options.filter, function(i, exp) {
+                ignore = ignore && !$el.is(exp);
+            });
         }
 
-        if (options.excludeClosest && $el.closet(options.excludeClosest).length) {
-            return true;
+        if(!ignore && options.exclude) {
+            $.each(options.exclude, function(i, exp) {
+                ignore = ignore || $el.is(exp);
+                // break cicle on ignore
+                return ignore ? false : true;
+            });
         }
 
-        return false;
+        // Prevent from losing focus on selected element
+        if (!ignore && currentSelection) {
+            if($el.filter(':outliner').length) {
+                ignore = true;
+            }
+        }
+
+        if (!ignore && options.excludeClosest && $el.closest(options.excludeClosest).length) {
+            ignore = true;
+        }
+
+        return ignore;
+    }
+
+    function getElementLabel($el) {
+        var el = $el.get(0),
+            label = el.tagName.toLowerCase(),
+            className = el.className;
+
+        className = className.replace(selectedClass, '');
+        className = className.replace(namespace, '');
+
+        label += el.id ? '#' + el.id : '';
+        if (className) {
+            label += ('.' + $.trim(className).replace(/ /g, '.')).replace(/\.\.+/g, '.');
+        }
+        return label + ' (' + Math.round($el.width()) + 'x' + Math.round($el.height()) + ')';
+    }
+
+    function updateOutlinePosition($el) {
+        var label = '',
+            offset = $el.offset();
+
+        $el.toggleClass(namespace);
+
+        if(options.showLabel) {
+            label = getElementLabel($el);
+            helpers.label.html(label).show().css({
+                top: Math.max(0, offset.top - options.outlineWidth - helpers.label.outerHeight()),
+                left: Math.max(0, offset.left - options.outlineWidth)
+            });
+
+            if (!$el.hasClass(namespace)) {
+                helpers.label.hide();
+            }
+        }
     }
 
 
@@ -267,24 +331,16 @@
                         return;
                     }
 
-                    switch(e.type) {
-                        case 'click':
-                            if(currentSelection) {
-                                cancelSelection();
-                            } else {
-                                onSelection($tgt);
-                            }
-                            break;
-                        case 'mouseover':
-                            if(!currentSelection || currentSelection.length === 0) {
-                                $tgt.addClass(namespace);
-                            }
-                            break;
-                        case 'mouseout':
-                            $tgt.removeClass(namespace);
-                            break;
-                        default: break;
+                    if (e.type == 'click') {
+                        if(currentSelection) {
+                            cancelSelection();
+                        } else {
+                            onSelection($tgt);
+                        }
+                    } else {
+                        updateOutlinePosition($tgt);
                     }
+
                 });
         }
 
@@ -344,10 +400,12 @@
         outlineColor: '#c00',
         outlineSelectedColor: 'blue',
         showGlasses: true,
+        showLabel: true,
+        stopOnSelection: false,
         onSelection: null,
         onCancel: null,
         filter: null,
-        exclude: '.' + namespace + '-glass',
+        exclude: ['.' + namespace + '-glass', '.' + namespace + '-label'],
         excludeClosest: null
     };
 
