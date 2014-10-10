@@ -45,7 +45,7 @@
 
     $.outliner();
 
-    strictEqual($('body > .dom-outliner-glass').length, 4, 'should have four glasses');
+    strictEqual($('body > .dom-outliner-glass').length, 5, 'should have five glasses');
     strictEqual($('body > .dom-outliner-label').length, 1, 'should have one label helper');
   });
 

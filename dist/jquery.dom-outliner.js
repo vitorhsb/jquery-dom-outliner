@@ -1,4 +1,4 @@
-/*! dom-outliner - v0.1.0 - 2014-10-09
+/*! dom-outliner - v0.1.0 - 2014-10-10
 * https://github.com/vitorhsb/dom-outliner
 * Copyright (c) 2014 Vitor Barbosa; Licensed MIT */
 (function ($) {
@@ -8,6 +8,7 @@
         namespace = 'dom-outliner',
         selectedClass = namespace + '-selected',
         glassClass = namespace + '-glass',
+        transparentClass = namespace + '-transparent-glass',
         glasses = {},
         helpers = {},
         currentSelection = null;
@@ -84,6 +85,13 @@
                 'z-index: 2000001;' +
                 'min-height: 0 !important;' +
                 'min-width: 0 !important;' +
+            '}'+
+            '.' + transparentClass + ' {' +
+                'background: rgba(0, 0, 0, 0);' +
+                'opacity: 1.0 !important;' +
+                '-moz-opacity: 1 !important;' +
+                'filter: alpha(opacity=1) !important;' +
+                '-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=($value*100))" !important;' +
             '}';
 
         writeCSS(css);
@@ -98,12 +106,15 @@
     function removeHelpers() {
         $.each(helpers, function(name, $el) {
             $el.remove();
+
         });
         helpers = {};
     }
 
     function createGlassElements() {
         glasses = {
+            center : $('<div id="' + glassClass + '-center" class="' + glassClass + ' ' + transparentClass + '"/></div>')
+                .appendTo(utils.getBody()),
             top : $('<div id="' + glassClass + '-top" class="' + glassClass + '"/></div>').appendTo(utils.getBody()),
             right : $('<div id="' + glassClass + '-right" class="' + glassClass + '"/></div>').appendTo(utils.getBody()),
             bottom : $('<div id="' + glassClass + '-bottom" class="' + glassClass + '"/></div>').appendTo(utils.getBody()),
@@ -125,6 +136,7 @@
     }
 
 
+
     function setSelection($el) {
         var $doc = utils.getDocument(),
             docHeight = $doc.height(),
@@ -134,41 +146,50 @@
             $(this).addClass(selectedClass);
         });
 
-        try {
-            var offset = $el.offset(),
-                height = $el.outerHeight(),
-                width = $el.outerWidth();
+        if(options.showGlasses) {
+            try {
+                var offset = $el.offset(),
+                    height = $el.outerHeight(),
+                    width = $el.outerWidth();
 
-            glasses.top.css({
-                top:0,
-                left:0,
-                height:offset.top - options.outlineWidth,
-                width:docWidth
-            }).show();
+                glasses.center.css({
+                    top: offset.top-options.outlineWidth,
+                    left: offset.left-options.outlineWidth,
+                    height: height + ( 2 * options.outlineWidth),
+                    width: width + ( 2 * options.outlineWidth)
+                }).show();
 
-            glasses.right.css({
-                top: offset.top - options.outlineWidth,
-                left: offset.left + width + options.outlineWidth,
-                height: height + ( 2 * options.outlineWidth),
-                width: (docWidth-offset.left-width) - options.outlineWidth
-            }).show();
+                glasses.top.css({
+                    top: 0,
+                    left: 0,
+                    height: offset.top - options.outlineWidth,
+                    width: docWidth
+                }).show();
 
-            glasses.bottom.css({
-                top: (offset.top + height + options.outlineWidth),
-                left: 0,
-                height: (docHeight - offset.top - height - options.outlineWidth),
-                width: docWidth
-            }).show();
+                glasses.right.css({
+                    top: offset.top - options.outlineWidth,
+                    left: offset.left + width + options.outlineWidth,
+                    height: height + ( 2 * options.outlineWidth),
+                    width: (docWidth-offset.left-width) - options.outlineWidth
+                }).show();
 
-            glasses.left.css({
-                top: offset.top - options.outlineWidth,
-                left: 0,
-                height: height + ( 2 * options.outlineWidth),
-                width: offset.left - options.outlineWidth
-            }).show();
+                glasses.bottom.css({
+                    top: (offset.top + height + options.outlineWidth),
+                    left: 0,
+                    height: (docHeight - offset.top - height - options.outlineWidth),
+                    width: docWidth
+                }).show();
 
-        } catch (err) {
-        } finally {}
+                glasses.left.css({
+                    top: offset.top - options.outlineWidth,
+                    left: 0,
+                    height: height + ( 2 * options.outlineWidth),
+                    width: offset.left - options.outlineWidth
+                }).show();
+
+            } catch (err) {
+            } finally {}
+        }
     }
 
     function unsetSelection($el) {
@@ -178,55 +199,12 @@
     }
 
     function onSelection($el) {
-        var $doc = utils.getDocument(),
-            docHeight = $doc.height(),
-            docWidth = $doc.width();
-
         currentSelection = $el;
-
-        try {
-            var offset = $el.offset(),
-                height = $el.outerHeight(),
-                width = $el.outerWidth();
-
-            glasses.top.css({
-                top:0,
-                left:0,
-                height:offset.top,
-                width:docWidth
-            }).show();
-
-            glasses.right.css({
-                top:offset.top,
-                left:offset.left + width,
-                height:height,
-                width:(docWidth-offset.left-width)
-            }).show();
-
-            glasses.bottom.css({
-                top:offset.top+height,
-                left:0,
-                height:(docHeight-offset.top-height),
-                width:docWidth
-            }).show();
-
-            glasses.left.css({
-                top:offset.top,
-                left:0,
-                height:height,
-                width:offset.left
-            }).show();
-
-
-
-        } catch (err) {
-        } finally {}
-
         setSelection($el);
-        if ($.isFunction(options.onClick)) {
-            options.onClick($el.get(0));
-        }
 
+        if ($.isFunction(options.onSelection)) {
+            options.onSelection($el.get(0));
+        }
     }
 
     function cancelSelection() {
@@ -258,8 +236,9 @@
     }
 
 
-
-
+    /**
+     * CONTROL METHODS
+     */
     function start() {
         var $base;
 
@@ -359,7 +338,8 @@
         outlineStyle: 'solid',
         outlineColor: '#c00',
         outlineSelectedColor: 'blue',
-        onClick: null,
+        showGlasses: true,
+        onSelection: null,
         onCancel: null,
         filter: null,
         exclude: '.' + namespace + '-glass',
