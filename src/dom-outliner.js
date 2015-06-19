@@ -1,11 +1,7 @@
 /*
- * dom-outliner
- *
- *
- * Copyright (c) 2014 Vitor Barbosa
- * Licensed under the MIT license.
+ * global jQuery
  */
- 
+
 (function ($) {
 	var initialized = false,
 		active = false,

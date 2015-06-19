@@ -1,4 +1,4 @@
-/*! dom-outliner - v0.1.2 - 2015-06-19
+/*! dom-outliner - v0.1.3 - 2015-06-19
 * https://github.com/vitorhsb/dom-outliner
 * Copyright (c) 2015 Vitor Barbosa; Licensed MIT */
 (function ($) {
